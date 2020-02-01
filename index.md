@@ -9,6 +9,6 @@ This app will ask the user what's their paycheck income is and the frequency of 
       2. Cable
       3. Phone bill
       4. Food
-         ...
+      ...
         
 The app will then calculate and subtract these expenses from the user's monthly income and display the amount that's left, whether or not it's positive or negative.
