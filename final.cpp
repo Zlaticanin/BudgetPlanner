@@ -1,0 +1,354 @@
+#include <cstdlib>
+#include <limits>
+#include <iostream>
+#include <iomanip> 
+#include <string>
+#include <fstream>
+#include <cmath>
+#include <cctype>
+using namespace std;
+
+struct MonthlyBudget // variables for monthly budget
+{
+    double housing;
+    double utilites;
+    double houseHold;
+    double transportation;
+    double food;
+    double medical;
+    double insurance;
+    double charity;
+    double entertainment;
+    double clothing;
+    double misc;
+};
+
+struct MonthlyExpenses // variables for monthly expenses
+{
+    double housingEx;
+    double utilitesEx;
+    double householdEx;
+    double transportationEx;
+    double foodEx;
+    double medicalEx;
+    double insuranceEx;
+    double charityEx;
+    double entertainmentEx;
+    double clothingEx;
+    double miscEx;
+};
+
+//prototypes 
+void describeProgram();
+void getMonths(int& months);
+void getMonthlyBudget(fstream& budgetFile, int months);
+void getMonthlyExpenses(fstream& expenseFile, int months);
+void getMonthlyReport(fstream& budgetFile, fstream& expenseFile, int months);   
+
+int main() 
+{
+    int months = 1; //so it starts with month 1
+    fstream budgetFile, expenseFile;   
+    // starting the program
+    describeProgram();
+    getMonths(months);
+    getMonthlyBudget(budgetFile, months);
+    getMonthlyExpenses(expenseFile, months);
+    getMonthlyReport(budgetFile, expenseFile, months);
+
+    return 0;
+}
+
+void describeProgram()
+{
+  cout << "This program will help you analyze your desired budget by asking you how many months you would like to analyze it for and how much money you spent on these kinds of expenses. After the calculation, the program will create a results text file that shows your budget, expenses and how much money you are over or under.\n\n";
+    
+}
+
+
+void getMonths(int& months)
+{
+  //how many months to calculate
+    cout<<"How many months would you like to have analyzed? ";
+    cin>>months;  
+    cout << "\n\n";
+
+    while(cin.fail())
+    {
+      //if user enters an invalid input for months
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(),'\n');
+        cout << "Enter valid input: ";
+        cin >> months;
+    }
+
+}
+
+
+void getMonthlyBudget(fstream& budgetFile, int months) //asking user for their montly allowance
+{
+    MonthlyBudget mb;
+    int count = 1;
+
+    budgetFile.open("budget.bin", ios::out|ios::binary);
+    if(budgetFile.fail()) // creating a bin file
+    {
+      cout<<"Could not find file: budget.bin \n";
+      system("read");  //act as system("PAUSE")
+    }
+
+     // user inputs information for his budget analysis
+     {
+        do
+        {
+            cout<<"Enter your housing budget for month "<<count<<": ";
+            cin>>mb.housing;
+            cout<<"Enter your utilities budget for month "<<count<<": ";
+            cin>>mb.utilites;
+            cout<<"Enter your household expense budget for month "<<count<<": ";
+            cin>>mb.houseHold;
+            cout<<"Enter your transportation budget for month "<<count<<": ";
+            cin>>mb.transportation;
+            cout<<"Enter your food budget for month "<<count<<": ";
+            cin>>mb.food;
+            cout<<"Enter your medical budget for month "<<count<<": ";
+            cin>>mb.medical;
+            cout<<"Enter your insurance budget for month "<<count<<": ";
+            cin>>mb.insurance;
+            cout<<"Enter your charity budget for month "<<count<<": ";
+            cin>>mb.charity;
+            cout<<"Enter your entertainment budget for month "<<count<<": ";
+            cin>>mb.entertainment;
+            cout<<"Enter your clothing budget for month "<<count<<": ";
+            cin>>mb.clothing;
+            cout<<"Enter your miscellaneous budget for month "<<count<<": ";
+            cin>>mb.misc;
+            cout << "\n\n";
+
+            budgetFile.write(reinterpret_cast<char*>(&mb),sizeof(mb));
+            count++;
+            months --;
+        }while(months != 0);
+    }
+
+    budgetFile.close();
+}
+
+void getMonthlyExpenses(fstream& expenseFile, int months)
+{
+    MonthlyExpenses me;
+    int count = 1;
+
+
+    expenseFile.open("expenses.bin", ios::out|ios::binary);
+    if(expenseFile.fail())
+    {
+      cout<<"Could not open expenses.bin \n";
+      system("read");
+    }
+
+    {
+    // user inputs information for his expense analysis
+        do
+        {
+            cout<<"Enter your housing expenses for month "<<count<<": ";
+            cin>>me.housingEx;
+            cout<<"Enter your utilities expenses for month "<<count<<": ";
+            cin>>me.utilitesEx;
+            cout<<"Enter the cost of your house hold expenses for month "<<count<<": ";
+            cin>>me.householdEx;
+            cout<<"Enter your transportation expenses for month "<<count<<": ";
+            cin>>me.transportationEx;
+            cout<<"Enter your food expenses for month "<<count<<":\n";
+            cin>>me.foodEx;
+            cout<<"Enter your medical expenses for month "<<count<<": ";
+            cin>>me.medicalEx;
+            cout<<"Enter your insurance expenses for month "<<count<<": ";
+            cin>>me.insuranceEx;
+            cout<<"Enter your charity expenses for month "<<count<<": ";
+            cin>>me.charityEx;
+            cout<<"Enter your entertainment expenses for month "<<count<<": ";
+            cin>>me.entertainmentEx;
+            cout<<"Enter your clothing expenses for month "<<count<<": ";
+            cin>>me.clothingEx;
+            cout<<"Enter your miscellaneous expenses for month "<<count<<": ";
+            cin>>me.miscEx;    
+
+            expenseFile.write(reinterpret_cast<char*>(&me),sizeof(me));
+            count++;    
+            months--;   
+        }while(months!=0);  
+    }
+
+    expenseFile.close();
+}
+
+
+void getMonthlyReport(fstream& budgetFile, fstream& expenseFile, int months)
+{
+    MonthlyBudget mb;
+    MonthlyExpenses me;
+    ofstream toFile;
+
+    budgetFile.open("budget.bin", ios::in|ios::binary);
+    if(budgetFile.fail()){
+        cout<<"Could not open budget.bin";
+        system("read"); 
+    }
+    budgetFile.read(reinterpret_cast<char*>(&mb),sizeof(mb));
+
+    expenseFile.open("expenses.bin", ios::in|ios::binary);  
+    if(expenseFile.fail()){
+        cout<<"Could not open expenses.bin (getMonthlyReport function)";
+        system("read");
+    }    
+    expenseFile.read(reinterpret_cast<char*>(&me),sizeof(me));
+
+    while(  !expenseFile.eof() && !budgetFile.eof()  )
+    {
+      cout << "\n\n";
+       //displaying information on screen 
+       cout<<fixed<<showpoint<<setprecision(2);
+       cout<<"--------------------------------------------------------------------\n";
+       cout<<left<<setw(14)<<"Category";
+       cout<<right<<setw(11)<<"Budget";
+       cout<<right<<setw(14)<<"Spent";
+       cout<<right<<setw(19)<<"   Over(-)/Under \n";
+       cout<<"--------------------------------------------------------------------\n";
+
+       cout<<left<<setw(14)<<"Housing";
+       cout<<right<<setw(11)<<mb.housing;
+       cout<<right<<setw(14)<<me.housingEx;
+       cout<<right<<setw(14)<<(mb.housing - me.housingEx)<<"\n";
+
+       cout<<left<<setw(14)<<"Utilities";
+       cout<<right<<setw(11)<<mb.utilites;
+       cout<<right<<setw(14)<<me.utilitesEx;
+       cout<<right<<setw(14)<<(mb.utilites - me.utilitesEx)<<"\n";
+
+       cout<<left<<setw(14)<<"House Hold";
+       cout<<right<<setw(11)<<mb.houseHold;
+       cout<<right<<setw(14)<<me.householdEx;
+       cout<<right<<setw(14)<<(mb.houseHold - me.householdEx)<<"\n";
+
+       cout<<left<<setw(14)<<"Transportation";
+       cout<<right<<setw(11)<<mb.transportation;
+       cout<<right<<setw(14)<<me.transportationEx;
+       cout<<right<<setw(14)<<(mb.transportation - me.transportationEx)<<"\n";
+
+       cout<<left<<setw(14)<<"Food";
+       cout<<right<<setw(11)<<mb.food;
+       cout<<right<<setw(14)<<me.foodEx;
+       cout<<right<<setw(14)<<(mb.food - me.foodEx)<<"\n";
+
+       cout<<left<<setw(14)<<"Medical";
+       cout<<right<<setw(11)<<mb.medical;
+       cout<<right<<setw(14)<<me.medicalEx;
+       cout<<right<<setw(14)<<(mb.medical - me.medicalEx)<<"\n";
+
+       cout<<left<<setw(14)<<"Insurance";
+       cout<<right<<setw(11)<<mb.insurance;
+       cout<<right<<setw(14)<<me.insuranceEx;
+       cout<<right<<setw(14)<<(mb.insurance - me.insuranceEx)<<"\n";
+
+       cout<<left<<setw(14)<<"Charity";
+       cout<<right<<setw(11)<<mb.charity;
+       cout<<right<<setw(14)<<me.charityEx;
+       cout<<right<<setw(14)<<(mb.charity - me.charityEx)<<"\n";
+
+       cout<<left<<setw(14)<<"Entertainment";
+       cout<<right<<setw(11)<<mb.entertainment;
+       cout<<right<<setw(14)<<me.entertainmentEx;
+       cout<<right<<setw(14)<<(mb.entertainment - me.entertainmentEx)<<"\n";
+
+       cout<<left<<setw(14)<<"Clothing";
+       cout<<right<<setw(11)<<mb.clothing;
+       cout<<right<<setw(14)<<me.clothingEx;
+       cout<<right<<setw(14)<<(mb.clothing - me.clothingEx)<<"\n";
+
+       cout<<left<<setw(14)<<"Miscellaneous";
+       cout<<right<<setw(11)<<mb.misc;
+       cout<<right<<setw(14)<<me.miscEx;
+       cout<<right<<setw(14)<<(mb.misc - me.miscEx)<<"\n";
+
+       cout<<"For the month you are over budget by $"<<
+            (mb.housing + mb.utilites + mb.houseHold + mb.transportation + mb.food +
+             mb.medical + mb.insurance + mb.charity + mb.entertainment + mb.clothing + mb.misc)
+             -
+            (me.housingEx + me.utilitesEx + me.householdEx + me.transportationEx
+             + me.foodEx + me.medicalEx + me.insuranceEx + mb.charity + me.entertainmentEx + 
+             me.clothingEx + me.miscEx )<<"\n";
+
+       //writing to text file
+       toFile.open("results.txt",ios::app);
+       toFile<<fixed<<showpoint<<setprecision(2);
+       toFile<<"--------------------------------------------------------------------\n";
+       toFile<<left<<setw(14)<<"Category";
+       toFile<<right<<setw(11)<<"Budget";
+       toFile<<right<<setw(14)<<"Spent";
+       toFile<<right<<setw(19)<<"   Over(-)/Under \n";
+       toFile<<"--------------------------------------------------------------------\n";
+
+       toFile<<left<<setw(14)<<"Housing";
+       toFile<<right<<setw(11)<<mb.housing;
+       toFile<<right<<setw(14)<<me.housingEx;
+       toFile<<right<<setw(14)<<(mb.housing - me.housingEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"Utilities";
+       toFile<<right<<setw(11)<<mb.utilites;
+       toFile<<right<<setw(14)<<me.utilitesEx;
+       toFile<<right<<setw(14)<<(mb.utilites - me.utilitesEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"House Hold";
+       toFile<<right<<setw(11)<<mb.houseHold;
+       toFile<<right<<setw(14)<<me.householdEx;
+       toFile<<right<<setw(14)<<(mb.houseHold - me.householdEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"Transportation";
+       toFile<<right<<setw(11)<<mb.transportation;
+       toFile<<right<<setw(14)<<me.transportationEx;
+       toFile<<right<<setw(14)<<(mb.transportation - me.transportationEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"Food";
+       toFile<<right<<setw(11)<<mb.food;
+       toFile<<right<<setw(14)<<me.foodEx;
+       toFile<<right<<setw(14)<<(mb.food - me.foodEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"Medical";
+       toFile<<right<<setw(11)<<mb.medical;
+       toFile<<right<<setw(14)<<me.medicalEx;
+       toFile<<right<<setw(14)<<(mb.medical - me.medicalEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"Insurance";
+       toFile<<right<<setw(11)<<mb.insurance;
+       toFile<<right<<setw(14)<<me.insuranceEx;
+       toFile<<right<<setw(14)<<(mb.insurance - me.insuranceEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"Charity";
+       toFile<<right<<setw(11)<<mb.charity;
+       toFile<<right<<setw(14)<<me.charityEx;
+       toFile<<right<<setw(14)<<(mb.charity - me.charityEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"Entertainment";
+       toFile<<right<<setw(11)<<mb.entertainment;
+       toFile<<right<<setw(14)<<me.entertainmentEx;
+       toFile<<right<<setw(14)<<(mb.entertainment - me.entertainmentEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"Clothing";
+       toFile<<right<<setw(11)<<mb.clothing;
+       toFile<<right<<setw(14)<<me.clothingEx;
+       toFile<<right<<setw(14)<<(mb.clothing - me.clothingEx)<<"\n";
+
+       toFile<<left<<setw(14)<<"Miscellaneous";
+       toFile<<right<<setw(11)<<mb.misc;
+       toFile<<right<<setw(14)<<me.miscEx;
+       toFile<<right<<setw(14)<<(mb.misc - me.miscEx)<<"\n";
+       toFile.close();
+
+       expenseFile.read(reinterpret_cast<char*>(&me),sizeof(me));
+       budgetFile.read(reinterpret_cast<char*>(&mb),sizeof(mb));       
+    }
+
+    budgetFile.close();
+    expenseFile.close();
+}
